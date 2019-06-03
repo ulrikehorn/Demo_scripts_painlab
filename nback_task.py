@@ -61,6 +61,7 @@ def taskRoutine():
     winexp.flip()
     textObjsub.setText(letter)
     textObjsub.draw()
+    event.clearEvents() # keypresses cleared
     timerResponse.reset() # timer set to 0
     winsub.flip()
     core.wait(speed)
