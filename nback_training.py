@@ -13,6 +13,9 @@ speed = 0.75
 # how many blocks you want to do maximum
 num_blocks = 3
 
+# 1back or 2back task
+back_n = 1
+
 # Ensure that relative paths start from the same directory as this script
 thisDir = os.path.dirname(os.path.abspath(__file__)).decode(sys.getfilesystemencoding())
 os.chdir(thisDir)
@@ -45,8 +48,18 @@ textObjexp2 = visual.TextStim(win=winexp, text="", color="black", height = 0.1, 
 textObjsub = visual.TextStim(win=winsub, text="", color="black", height = 0.1)
 scoreTextsub = visual.TextStim(win=winsub, text="", color="black", height = 0.1, pos = (-0.4, 0.75))
 overallscoreTextsub = visual.TextStim(win=winsub, text="", color="black", height = 0.1, pos = (0.4, 0.75))
-headlineTextsub = visual.TextStim(win=winsub, text="2 back task", color="black", height = 0.15, pos = (0.0, 0.85), bold = True)
-imagefile = thisDir + os.sep + '2back_explanation_transp.png'
+headlineTextsub = visual.TextStim(win=winsub, color="black", height = 0.15, pos = (0.0, 0.85), bold = True)
+if back_n==2:
+    imagefile = thisDir + os.sep + '2back_explanation_transp.png'
+    headlineTextsub.setText('2-back task')
+elif back_n==1:
+    imagefile = thisDir + os.sep + '1back_explanation_transp.png'
+    headlineTextsub.setText('1-back task')
+else:
+    print('Only 1 and 2 back tasks are supported')
+    winsub.close()
+    winexp.close()
+    core.quit()
 imagesub = visual.ImageStim(win = winsub, image = imagefile, pos = (0, 0.5))
 
 timerResponse=core.Clock() #for reaction time
@@ -68,7 +81,7 @@ def taskRoutine(score):
     # wait several ms while the letter is shown
     while timerResponse.getTime()<=speed:
         response = event.getKeys(timeStamped=timerResponse)
-        if response:
+        if response and not pressed:
             pressed = True
             trials.addData('rt',response[0][1])
             if target==1.0:
@@ -92,13 +105,13 @@ def taskRoutine(score):
     winsub.flip()
     while timerResponse.getTime()<= 2*speed:
         response = event.getKeys(timeStamped=timerResponse)
-        if response:
+        if response and not pressed:
             pressed = True
             trials.addData('rt',response[0][1])
             if target==1.0:
                 textObjexp2.setText('target hit!')
                 trials.addData('response',1)
-                score = score + 15
+                score = score + 12
                 scoreTextsub.setText('Score:  '+str(score))
                 scoreTextsub.draw()
                 winsub.flip()
@@ -153,17 +166,21 @@ for iblock in range(num_blocks):
 
     # set up handler to deal with trials
     # trials have the correct randomized order, so just read them sequentially
-    blockdf = pd.read_csv('nback_randomized.csv', sep=',', header=0)
+    trial_file = str(back_n)+'back_randomized.csv'
+    blockdf = pd.read_csv(trial_file, sep=',', header=0)
     indices = blockdf[blockdf['block'] == iblock].index.tolist()
-    # no blocks anymore
+    # selected to many blocks
     if not indices:
-        # end routine for overall result?
+        textObjsub.setText('Overall score:  '+str(overall_score)+'\nGoodbye!')
+        textObjsub.draw()
+        winsub.flip()
+        core.wait(2)
         winsub.close()
         winexp.close()
         core.quit()
     # otherwise add these trials 
     trials = data.TrialHandler(nReps=1.0, method='sequential',
-        trialList=data.importConditions('nback_randomized.csv',selection = indices),
+        trialList=data.importConditions(trial_file,selection = indices),
         name='Trials')
     # add this structure to the experiment
     exp.addLoop(trials)
@@ -177,7 +194,10 @@ for iblock in range(num_blocks):
     winsub.flip()
     startkey = event.waitKeys(keyList=["space","escape"])
     if startkey[0]=='escape':
-        # end routine?
+        textObjsub.setText('Overall score:  '+str(overall_score)+'\nGoodbye!')
+        textObjsub.draw()
+        winsub.flip()
+        core.wait(2)
         winsub.close()
         winexp.close()
         core.quit()
@@ -197,4 +217,10 @@ for iblock in range(num_blocks):
         overall_score = overall_score + score
         feedbackRoutine(overall_score)
 
-
+textObjsub.setText('Overall score:  '+str(overall_score)+'\nGoodbye!')
+textObjsub.draw()
+winsub.flip()
+core.wait(2)
+winsub.close()
+winexp.close()
+core.quit()

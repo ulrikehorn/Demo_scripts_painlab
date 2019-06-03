@@ -7,7 +7,7 @@ import numpy as np
 num_blocks = 10
 num_trials = 15
 letter_list = ['A','B','C','D','E']
-back_n = 2
+back_n = 1
 
 np.random.seed(722)
 
@@ -31,5 +31,6 @@ for iblock in range(num_blocks):
     result = result.append(trial_seq, ignore_index = True)
 
 print(result)
-result.to_csv('nback_randomized.csv', index = False)
+file_name = str(back_n)+'back_randomized.csv'
+result.to_csv(file_name, index = False)
 
