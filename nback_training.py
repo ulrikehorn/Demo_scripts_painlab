@@ -14,7 +14,7 @@ speed = 0.75
 num_blocks = 3
 
 # 1back or 2back task
-back_n = 1
+back_n = 2
 
 # Ensure that relative paths start from the same directory as this script
 thisDir = os.path.dirname(os.path.abspath(__file__)).decode(sys.getfilesystemencoding())
@@ -64,7 +64,6 @@ imagesub = visual.ImageStim(win = winsub, image = imagefile, pos = (0, 0.5))
 
 timerResponse=core.Clock() #for reaction time
 
-
 def taskRoutine(score):
     textObjexp.setText(letter)
     textObjexp.draw()
@@ -73,7 +72,6 @@ def taskRoutine(score):
     scoreTextsub.draw()
     textObjsub.setText(letter)
     textObjsub.draw()
-    scoreTextsub.draw()
     pressed = False # to track whether subject has pressed a key
     event.clearEvents() # keypresses cleared
     timerResponse.reset() # timer set to 0
@@ -150,7 +148,7 @@ def feedbackRoutine(overall_score):
     elif missed==0 and incorrect>0:
         result_text = "You detected all {} targets but incorrectly pressed {} times.\nConcentrate a bit more!".format(hits, incorrect)
     else:
-        result_text = "You missed {} targets!\nTry harder next time.".format(missed)
+        result_text = "You missed {} targets!\nTry a bit harder next time.".format(missed)
     textObjsub.setText(result_text)
     textObjsub.draw()
     scoreTextsub.draw()
