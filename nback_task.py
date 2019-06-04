@@ -7,11 +7,21 @@ from psychopy import data, logging, visual, core, event, gui, monitors
 from pyglet.window import key # for keystate handling
 import os  # handy system and path functions
 import sys  # to get file system encoding
+import parallel # for interaction with parallel port
+import matplotlib.pyplot as plt # for plotting the results
 
-# how fast letters are displayed
+# how long letters are displayed (in s)
 speed = 0.75
 
-num_blocks = 3
+# take an even number as task and control condition currently alternate
+num_blocks = 4
+
+# for testing at a computer without parallel port change this:
+parallel_port_mode = True
+
+# pin to Thermode: 6
+# how long the signal should be (in s)
+thermode_trigger_dur = 0.01
 
 # Ensure that relative paths start from the same directory as this script
 thisDir = os.path.dirname(os.path.abspath(__file__)).decode(sys.getfilesystemencoding())
@@ -40,13 +50,20 @@ winsub = visual.Window(
     allowGUI=False, allowStencil=False,
     color=[0.5,0.5,0.5], colorSpace='rgb', waitBlanking = False)
 
+# text for experimenter screen:
 textObjexp = visual.TextStim(win=winexp, text="", color="black", height = 0.1, pos=(0.0, 0.0))
 textObjexp2 = visual.TextStim(win=winexp, text="", color="black", height = 0.1, pos = (0.0, 0.5))
+# text for subject (letter, score, overall_score, headline to display which task is upcoming)
 textObjsub = visual.TextStim(win=winsub, text="", color="black", height = 0.1)
 scoreTextsub = visual.TextStim(win=winsub, text="", color="black", height = 0.1, pos = (-0.4, 0.75))
 overallscoreTextsub = visual.TextStim(win=winsub, text="", color="black", height = 0.1, pos = (0.4, 0.75))
 headlineTextsub = visual.TextStim(win=winsub, color="black", height = 0.15, pos = (0.0, 0.85), bold = True)
-dotObj = visual.Circle(win=winsub, fillColor="white", lineColor="white",radius=[10,10],units="pix")
+# fixation cross:
+fixObj = visual.ShapeStim(win = winsub, units = 'pix', pos = (0,0),
+vertices=((0, -50), (0, 50), (0,0), (-50,0), (50, 0)),
+    lineWidth=7,closeShape=False,lineColor="black")
+# had a dot before:
+#dotObj = visual.Circle(win=winsub, fillColor="white", lineColor="white",radius=[10,10],units="pix")
 ratingPain = visual.RatingScale(win = winsub, low = 0, high = 100, markerStart = 50, 
 marker = 'slider', stretch = 1.5, tickHeight = 1.5, tickMarks = [0,50,100],
 labels = [u'nicht spürbar', 'Schmerzgrenze', u'unerträglich'],
@@ -54,23 +71,29 @@ showAccept = False, lineColor='black', textColor='black', textSize=0.8)
 imagefile = thisDir + os.sep + '2back_explanation_transp.png'
 imagesub = visual.ImageStim(win = winsub, image = imagefile, pos = (0, 0.5))
 
-keyState=key.KeyStateHandler() # to check the key status when using the keyboard mode
+# to check the key status during rating
+keyState = key.KeyStateHandler() 
 winsub.winHandle.push_handlers(keyState)
 
-timerRating=core.Clock() #for rating time
-timerResponse=core.Clock() #for reaction time
+timerRating = core.Clock() #for rating time
+timerResponse = core.Clock() #for reaction time
+timerTrigger = core.Clock() # for sending trigger to thermode
 
+#initialize parallel port for communication with thermode
+if parallel_port_mode:
+    p_port1 = parallel.Parallel(port = 1)
+
+# Inter trial interval with fixation cross
 def itiRoutine():
-    dotObj.pos = (0,0)
-    dotObj.setFillColor("white")
-    dotObj.setLineColor("white")
-    dotObj.draw()
+    fixObj.draw()
     winsub.flip()
     core.wait(5)
 
+# control task: show only letters
+# and rating
 def controlRoutine():
     # Start block with space keys
-    #imagesub.draw() --> control image
+    #imagesub.draw() --> maybe make a control image as well?
     headlineTextsub.setText('control task')
     headlineTextsub.draw()
     startText = "Press space to start\n"
@@ -78,6 +101,14 @@ def controlRoutine():
     textObjsub.draw()
     winsub.flip()
     startkey = event.waitKeys(keyList=["space"])
+    timerTrigger.reset() # timer set to 0
+    # begin heat/warm stimulation (send trigger to brainamp and thermode)
+    if parallel_port_mode:
+        while timerTrigger.getTime() <= thermode_trigger_dur:
+            #p_port1.setData(int("00000001",2)) # sets pin 2 high
+            #p_port1.setData(int("00010100",2)) # sets pin 4 and 6 high
+            p_port1.setData(int("00010000",2)) # sets pin 6 high
+        p_port1.setData(0) #set all pins low
     # run the trials as given in the trial handler
     for trial in trials:
         # abbreviate parameter names if possible (e.g. letter = trial.letter)
@@ -98,6 +129,10 @@ def controlRoutine():
     rating = ratingRoutine()
     return rating
 
+# show nback task with score for current run and overall score 
+# collect any key presses while the letter is still visible (score +15)
+# and also when the letter disappeared (score +12)
+# also show rating 
 def taskRoutine():
     # Start block with space keys
     imagesub.draw()
@@ -112,6 +147,14 @@ def taskRoutine():
     scoreTextsub.setText('Score:  '+str(score))
     scoreTextsub.draw()
     winsub.flip()
+    timerTrigger.reset() # timer set to 0
+    # begin heat/warm stimulation (send trigger to brainamp and thermode)
+    if parallel_port_mode:
+        while timerTrigger.getTime() <= thermode_trigger_dur:
+            #p_port1.setData(int("00000001",2)) # sets pin 2 high
+            #p_port1.setData(int("00010100",2)) # sets pin 4 and 6 high
+            p_port1.setData(int("00010000",2)) # sets pin 6 high
+        p_port1.setData(0) #set all pins low
     # run the trials as given in the trial handler
     for trial in trials:
         # abbreviate parameter names if possible (e.g. letter = trial.letter)
@@ -177,7 +220,6 @@ def taskRoutine():
                     winsub.flip()
                     winexp.flip()
         if not pressed:
-            trials.addData('rt',np.nan)
             if target==1.0:
                 textObjexp2.setText('target missed!')
                 trials.addData('response',-2)
@@ -278,9 +320,20 @@ for iblock in range(num_blocks):
     overall_score = overall_score + score
     itiRoutine()
 
-# TO DO: analysis of ratings depending on condition
-
 print(ratings)
+# plot of ratings depending on condition
+data = np.transpose(np.array([ratings[::2],ratings[1::2]]))
+labels = list(['Control','Task'])
+fs = 10  # fontsize
+fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(6, 6), sharey=True)
+axes.boxplot(data, labels=labels, showfliers=False)
+axes.set_title('Ratings', fontsize=fs)
+# add more plots by changing the nrows number and then accessing
+# axes via axes[0].boxplot(data, labels=labels, showmeans=True) and axes[1]
+
+fig.subplots_adjust(hspace=0.4)
+plt.show()
+
 winsub.close()
 winexp.close()
 core.quit()
