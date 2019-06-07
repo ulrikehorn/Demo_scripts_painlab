@@ -12,6 +12,10 @@ import matplotlib.pyplot as plt # for plotting the results
 
 # how long letters are displayed (in s)
 speed = 0.75
+# how long the fixation cross is shown in between 
+iti_time = 5
+# how long the time for the rating scale is
+rating_time = 8
 
 # take an even number as task and control condition currently alternate
 num_blocks = 4
@@ -87,7 +91,7 @@ if parallel_port_mode:
 def itiRoutine():
     fixObj.draw()
     winsub.flip()
-    core.wait(5)
+    core.wait(iti_time)
 
 # control task: show only letters
 # and rating
@@ -185,6 +189,8 @@ def taskRoutine():
                     scoreTextsub.draw()
                     textObjsub.draw()
                     winsub.flip()
+                    textObjexp2.draw()
+                    winexp.flip()
                 else:
                     textObjexp2.setText('incorrectly pressed')
                     trials.addData('response',-1)
@@ -193,6 +199,8 @@ def taskRoutine():
                     scoreTextsub.draw()
                     textObjsub.draw()
                     winsub.flip()
+                    textObjexp2.draw()
+                    winexp.flip()
         # and then wait a bit more while the letter is not shown anymore
         scoreTextsub.draw()
         winsub.flip()
@@ -208,6 +216,7 @@ def taskRoutine():
                     scoreTextsub.setText('Score:  '+str(score))
                     scoreTextsub.draw()
                     winsub.flip()
+                    textObjexp2.draw()
                     winexp.flip()
                 else:
                     textObjexp2.setText('incorrectly pressed')
@@ -216,6 +225,7 @@ def taskRoutine():
                     scoreTextsub.setText('Score:  '+str(score))
                     scoreTextsub.draw()
                     winsub.flip()
+                    textObjexp2.draw()
                     winexp.flip()
         if not pressed:
             if target==1.0:
@@ -225,10 +235,12 @@ def taskRoutine():
                 scoreTextsub.setText('Score:  '+str(score))
                 scoreTextsub.draw()
                 winsub.flip()
+                textObjexp2.draw()
                 winexp.flip()
             else:
                 textObjexp2.setText('no target')
                 trials.addData('response',0)
+                textObjexp2.draw()
                 winexp.flip()
         trials.addData('score',score)
         exp.nextEntry()
@@ -251,8 +263,7 @@ def ratingRoutine():
     keys = None
     # for a certain time check which button has been pressed
     # change image accordingly 
-    time_for_rating = 8
-    while timerRating.getTime() <= time_for_rating:
+    while timerRating.getTime() <= rating_time:
         # getKeys only checks where it has been pressed down once
         # use key state handler or implement timer how long you will want to
         # wait to count it as another press --> this does not work as we would want
@@ -332,6 +343,7 @@ fs = 10  # fontsize
 fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(6, 6), sharey=True)
 axes.boxplot(data, labels=labels, showfliers=False)
 axes.set_title('Ratings', fontsize=fs)
+#plt.ylim(0, 100)     # set the ylim to left, right
 # add more plots by changing the nrows number and then accessing
 # axes via axes[0].boxplot(data, labels=labels, showmeans=True) and axes[1]
 

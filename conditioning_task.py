@@ -40,7 +40,7 @@ pathCues = 'Pictures/'
 
 # Store info about the experiment session
 expName = 'Conditioning_task'
-expInfo = {'Proband':''}
+expInfo = {'Subject':''}
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 if dlg.OK == False:
     core.quit()  # user pressed cancel
@@ -48,10 +48,10 @@ expInfo['date'] = data.getDateStr(format='%Y%m%d_%H%M')  # add a simple timestam
 expInfo['expName'] = expName
 
 # Data file name stem = absolute path + name; later add .psyexp, .csv, .log, etc
-filename = thisDir + os.sep + 'data' + os.sep + '%s_%s_%s' % (expInfo['Proband'], expInfo['expName'], expInfo['date'])
+filename = thisDir + os.sep + 'data' + os.sep + '%s_%s_%s' % (expInfo['Subject'], expInfo['expName'], expInfo['date'])
 
 # in the DOS system you can only store up to 8 characters for the file name 
-edf_running_name = expInfo['Proband'] + '.EDF'
+edf_running_name = expInfo['Subject'] + '.EDF'
 # save on the other PC with a proper file name like all the other file types
 edf_save_filename = filename + '.edf'
 
@@ -207,13 +207,13 @@ def cueRoutine(pain):
 
 ##----------Experiment section--------------
 # Start experiment with space keys, later: trigger start by scanner
-textObjExp.setText("Leertaste druecken um Experiment zu beginnen\n")
+textObjExp.setText("Space to start experiment\n")
 textObjExp.setHeight(20)
 textObjExp.draw()
 winexp.flip()
 event.waitKeys(keyList=["space"])
 
-textObjExp.setText("Enter druecken um Kalibierung zu beginnen, \ndann mit C, V und Esc fortfahren")
+textObjExp.setText("Enter to start calibration, \ncontinue with C, V and Esc")
 textObjExp.draw()
 winexp.flip()
 
@@ -273,10 +273,10 @@ tk.closeDataFile()
 pylink.pumpDelay(50)
 
 # Get the EDF data and say goodbye
-textObjExp.setText("Uebertrage Daten")
+textObjExp.setText("Transfer data")
 textObjExp.draw()
 winexp.flip()
-textObj.setText('Der Block ist beendet.')
+textObj.setText('The experiment is over.')
 textObj.draw()
 win.flip()
 tk.receiveDataFile(edf_running_name, edf_save_filename)
