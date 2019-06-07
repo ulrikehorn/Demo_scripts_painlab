@@ -57,7 +57,7 @@ textObjexp2 = visual.TextStim(win=winexp, text="", color="black", height = 0.1, 
 textObjsub = visual.TextStim(win=winsub, text="", color="black", height = 0.1)
 scoreTextsub = visual.TextStim(win=winsub, text="", color="black", height = 0.1, pos = (-0.4, 0.75))
 overallscoreTextsub = visual.TextStim(win=winsub, text="", color="black", height = 0.1, pos = (0.4, 0.75))
-headlineTextsub = visual.TextStim(win=winsub, color="black", height = 0.15, pos = (0.0, 0.85), bold = True)
+headlineTextsub = visual.TextStim(win=winsub, color="black", height = 0.15, pos = (0.0, 0.65), bold = True)
 # fixation cross:
 fixObj = visual.ShapeStim(win = winsub, units = 'pix', pos = (0,0),
 vertices=((0, -50), (0, 50), (0,0), (-50,0), (50, 0)),
@@ -69,7 +69,7 @@ marker = 'slider', stretch = 1.5, tickHeight = 1.5, tickMarks = [0,50,100],
 labels = [u'nicht spürbar', 'Schmerzgrenze', u'unerträglich'],
 showAccept = False, lineColor='black', textColor='black', textSize=0.8)
 imagefile = thisDir + os.sep + '2back_explanation_transp.png'
-imagesub = visual.ImageStim(win = winsub, image = imagefile, pos = (0, 0.5))
+imagesub = visual.ImageStim(win = winsub, image = imagefile, pos = (0, 0.35))
 
 # to check the key status during rating
 keyState = key.KeyStateHandler() 
@@ -96,11 +96,10 @@ def controlRoutine():
     #imagesub.draw() --> maybe make a control image as well?
     headlineTextsub.setText('control task')
     headlineTextsub.draw()
-    startText = "Press space to start\n"
-    textObjsub.setText(startText)
-    textObjsub.draw()
     winsub.flip()
-    startkey = event.waitKeys(keyList=["space"])
+    core.wait(2.5)
+    winsub.flip()
+    core.wait(0.5)
     timerTrigger.reset() # timer set to 0
     # begin heat/warm stimulation (send trigger to brainamp and thermode)
     if parallel_port_mode:
@@ -138,11 +137,10 @@ def taskRoutine():
     imagesub.draw()
     headlineTextsub.setText('2-back task')
     headlineTextsub.draw()
-    startText = "Press space to start\n"
-    textObjsub.setText(startText)
-    textObjsub.draw()
     winsub.flip()
-    startkey = event.waitKeys(keyList=["space"])
+    core.wait(2.5)
+    winsub.flip()
+    core.wait(0.5)
     score = 0
     scoreTextsub.setText('Score:  '+str(score))
     scoreTextsub.draw()
@@ -295,6 +293,12 @@ def ratingRoutine():
 
 ##----------Experiment section--------------
 # create lists to store subject's ratings and performance
+startText = "Press space to start\n"
+textObjsub.setText(startText)
+textObjsub.draw()
+winsub.flip()
+event.waitKeys(keyList=["space"])
+itiRoutine()
 overall_score = 0
 ratings = np.empty(num_blocks)
 for iblock in range(num_blocks):
