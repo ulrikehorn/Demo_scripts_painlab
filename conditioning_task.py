@@ -14,7 +14,7 @@ from EyeLinkCoreGraphicsPsychoPy import EyeLinkCoreGraphicsPsychoPy # for eyelin
 # used computer has a parallel port (for sending triggers to digitimer and brainamp)
 parallel_port_mode = False
 # testing mode or original speed (times written below)
-testing_mode = True
+testing_mode = False
 # connect with a real eye tracker or not?
 dummyMode = True # Simulated connection to the tracker; press ESCAPE to skip calibration/validataion
 
@@ -23,10 +23,16 @@ trigger_dur = 0.01
 
 # waiting times
 iti_test = 1.5
-iti_time = 8
+#iti_orig = 10 ~8 (jittered)
 cue_time = 3.5
 stim_time = 0.5
 
+# establish a link to the tracker
+if not dummyMode: 
+    tk = pylink.EyeLink('100.1.1.1')
+else:
+    tk = pylink.EyeLink(None)
+    
 # Ensure that relative paths start from the same directory as this script
 thisDir = os.path.dirname(os.path.abspath(__file__)).decode(sys.getfilesystemencoding())
 os.chdir(thisDir)
@@ -66,6 +72,10 @@ exp = data.ExperimentHandler(name=expName, version='',
     savePickle=True, saveWideText=True,
     dataFileName=filename)
 
+trials = data.TrialHandler(nReps=1.0, method='sequential',
+    trialList=data.importConditions('conditioning_randomized.csv'),
+    name='Trials')
+
 # set screen properties
 scnWidth, scnHeight = (1920, 1080)
 
@@ -74,10 +84,10 @@ mon = monitors.Monitor('basement', width=53.0, distance=46.0)
 mon.setSizePix((scnWidth, scnHeight))
 
 # experimenter monitor
-winexp = visual.Window((1500, 800), fullscr=False, screen = 0, color=[0,0,0], units='pix', allowStencil=True,autoLog=False, waitBlanking = False)
+winexp = visual.Window((1500, 800), fullscr=False, screen = 0, color=[0.4,0.4,0.4], units='pix', allowStencil=True,autoLog=False, waitBlanking = False)
 
 # subject monitor
-win = visual.Window((scnWidth, scnHeight), fullscr=False, monitor=mon, screen = 1, color=[0,0,0], units='pix', allowStencil=True,autoLog=False, waitBlanking = False, allowGUI=False)
+win = visual.Window((scnWidth, scnHeight), fullscr=False, monitor=mon, screen = 1, color=[0.4,0.4,0.4], units='pix', allowStencil=True,autoLog=False, waitBlanking = False, allowGUI=False)
 
 # call the custom calibration routine "EyeLinkCoreGraphicsPsychopy.py", instead of the default
 # routines that were implemented in SDL
@@ -133,7 +143,7 @@ else:
 tk.sendCommand("link_sample_data  = LEFT,RIGHT,GAZE,GAZERES,AREA,STATUS,INPUT")
 
 ## define all parts of the experiment as different functions
-def itiRoutine():
+def itiRoutine(iti_time):
     dotObj.pos = (0,0)
     dotObj.setFillColor("white")
     dotObj.setLineColor("white")
@@ -161,7 +171,7 @@ def cueRoutine(pain):
     imageObj.draw()
     dotObj.draw()
     win.flip()
-    textObjExp.setText(cue)
+    textObjExp.setText(pain)
     textObjExp.draw()
     winexp.flip()
     # send message to tracker
@@ -186,6 +196,7 @@ def cueRoutine(pain):
     # after anticipation there comes the attention/stimulation phase
     # still showing the image
     imageObj.draw()
+    dotObj.draw()
     win.flip()
     winexp.flip()
     if (pain == 'pain'):
@@ -250,7 +261,7 @@ for trial in trials:
         for paramName in trial.keys():
             exec(paramName + '= trial.' + paramName)
         itiRoutine(iti_time)
-        cueRoutine(cue,pain)
+        cueRoutine(pain)
         exp.nextEntry()
 
 # send trigger to BrainAmp that experiment is finished
