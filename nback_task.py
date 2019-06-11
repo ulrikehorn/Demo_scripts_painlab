@@ -18,8 +18,8 @@ iti_time = 5
 # how long the time for the rating scale is (8s)
 rating_time = 8
 
-# take an even number as task and control condition currently alternate
-num_blocks = 4
+# max 21
+num_blocks = 21
 
 # for testing at a computer without parallel port change this:
 parallel_port_mode = True
@@ -28,9 +28,6 @@ parallel_port_mode = True
 # how long the signal should be (in s)
 thermode_trigger_dur = 0.01
 
-# whether we are using painful hot or only warm stimuli
-# (trigger is the same but file is named differently)
-run = 'warm' # 'hot' or 'warm'
 #--------------------------------------------
 
 # Ensure that relative paths start from the same directory as this script
@@ -49,7 +46,7 @@ if dlg.OK == False:
     core.quit()  # user pressed cancel
 expInfo['expName'] = expName
 
-filename = thisDir + os.sep + 'data' + os.sep + 'nback_result_' + '%s_%s' % (expInfo['Subject'], run)
+filename = thisDir + os.sep + 'data' + os.sep + 'nback_result_' + '%s' % (expInfo['Subject'])
 
 # An ExperimentHandler isn't essential but helps with data saving
 exp = data.ExperimentHandler(name=expName, version='',
@@ -322,7 +319,7 @@ def ratingRoutine():
 ##----------Experiment section--------------
 
 # read table with randomized task order
-taskdf = pd.read_csv('nback_task_order_randomized.csv', sep=',', header=0)
+taskdf = pd.read_csv('nback_run_order_randomized.csv', sep=',', header=0)
 
 # start experiment with space key 
 startText = "Press space to start\n"
@@ -362,7 +359,7 @@ for iblock in range(num_blocks):
     #trials.data['score'][trials.thisIndex:trials.thisTrialN] = 5.0
     #print(trials.data['rating'])
 
-ratingdf = pd.DataFrame({'Task':taskdf['task'][range(num_blocks)], 'Rating':ratings, 'Stim':np.repeat(run,num_blocks)})
+ratingdf = pd.DataFrame({'Task':taskdf['task'][range(num_blocks)], 'Rating':ratings, 'Stim':taskdf['stim'][range(num_blocks)]})
 ratingdf.to_csv(filename+'_ratings.csv', index = False)
 #print(ratings)
 # plot of ratings depending on condition

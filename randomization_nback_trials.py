@@ -4,10 +4,10 @@
 import pandas as pd 
 import numpy as np
 
-num_blocks = 10
+num_blocks = 30
 num_trials = 15
 letter_list = ['A','B','C','D','E']
-back_n = 1
+back_n = 2
 
 np.random.seed(722)
 
