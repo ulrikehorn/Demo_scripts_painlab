@@ -10,11 +10,12 @@ import sys  # to get file system encoding
 import parallel # for interaction with parallel port
 import matplotlib.pyplot as plt # for plotting the results
 
+#----------------settings--------------------
 # how long letters are displayed (in s)
 speed = 0.75
-# how long the fixation cross is shown in between 
+# how long the fixation cross is shown in between (5s)
 iti_time = 5
-# how long the time for the rating scale is
+# how long the time for the rating scale is (8s)
 rating_time = 8
 
 # take an even number as task and control condition currently alternate
@@ -27,6 +28,11 @@ parallel_port_mode = True
 # how long the signal should be (in s)
 thermode_trigger_dur = 0.01
 
+# whether we are using painful hot or only warm stimuli
+# (trigger is the same but file is named differently)
+run = 'warm' # 'hot' or 'warm'
+#--------------------------------------------
+
 # Ensure that relative paths start from the same directory as this script
 thisDir = os.path.dirname(os.path.abspath(__file__)).decode(sys.getfilesystemencoding())
 os.chdir(thisDir)
@@ -35,10 +41,18 @@ os.chdir(thisDir)
 if not os.path.isdir("data"):
     os.makedirs("data")
 
-filename = thisDir + os.sep + 'data' + os.sep + 'nback_experiment_result'
+# Store info about the experiment session
+expName = 'N-Back experiment'
+expInfo = {'Subject':''}
+dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
+if dlg.OK == False:
+    core.quit()  # user pressed cancel
+expInfo['expName'] = expName
+
+filename = thisDir + os.sep + 'data' + os.sep + 'nback_result_' + '%s_%s' % (expInfo['Subject'], run)
 
 # An ExperimentHandler isn't essential but helps with data saving
-exp = data.ExperimentHandler(name='Nback', version='',
+exp = data.ExperimentHandler(name=expName, version='',
     runtimeInfo=None, originPath=None, savePickle=True, saveWideText=True,
     dataFileName=filename)
 
@@ -128,6 +142,9 @@ def controlRoutine():
         winexp.flip()
         winsub.flip()
         core.wait(speed)
+        #trials.addData('response',np.nan)
+        #trials.addData('score',np.nan)
+        #trials.addData('rt',np.nan)
         exp.nextEntry()
     rating = ratingRoutine()
     return rating
@@ -303,13 +320,18 @@ def ratingRoutine():
     
 
 ##----------Experiment section--------------
-# create lists to store subject's ratings and performance
+
+# read table with randomized task order
+taskdf = pd.read_csv('nback_task_order_randomized.csv', sep=',', header=0)
+
+# start experiment with space key 
 startText = "Press space to start\n"
 textObjsub.setText(startText)
 textObjsub.draw()
 winsub.flip()
 event.waitKeys(keyList=["space"])
 itiRoutine()
+score = 0
 overall_score = 0
 ratings = np.empty(num_blocks)
 for iblock in range(num_blocks):
@@ -327,28 +349,35 @@ for iblock in range(num_blocks):
     
     # alternate between control condition and task condition
     # TO DO: do that with another randomization file 
-    if iblock % 2:
+    if taskdf['task'][iblock] == 'control':
         rating = controlRoutine()
     else:
         score, rating = taskRoutine()
     ratings[iblock] = rating
     overall_score = overall_score + score
     itiRoutine()
+    #trials.addData('rating',rating)
+    #print(trials.thisIndex)
+    #print(trials.thisTrialN)
+    #trials.data['score'][trials.thisIndex:trials.thisTrialN] = 5.0
+    #print(trials.data['rating'])
 
-print(ratings)
+ratingdf = pd.DataFrame({'Task':taskdf['task'][range(num_blocks)], 'Rating':ratings, 'Stim':np.repeat(run,num_blocks)})
+ratingdf.to_csv(filename+'_ratings.csv', index = False)
+#print(ratings)
 # plot of ratings depending on condition
-data = np.transpose(np.array([ratings[::2],ratings[1::2]]))
-labels = list(['Control','Task'])
-fs = 10  # fontsize
-fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(6, 6), sharey=True)
-axes.boxplot(data, labels=labels, showfliers=False)
-axes.set_title('Ratings', fontsize=fs)
+#data = np.transpose(np.array([ratings[::2],ratings[1::2]]))
+#labels = list(['Control','Task'])
+#fs = 10  # fontsize
+#fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(6, 6), sharey=True)
+#axes.boxplot(data, labels=labels, showfliers=False)
+#axes.set_title('Ratings', fontsize=fs)
 #plt.ylim(0, 100)     # set the ylim to left, right
 # add more plots by changing the nrows number and then accessing
 # axes via axes[0].boxplot(data, labels=labels, showmeans=True) and axes[1]
-
-fig.subplots_adjust(hspace=0.4)
-plt.show()
+#
+#fig.subplots_adjust(hspace=0.4)
+#plt.show()
 
 winsub.close()
 winexp.close()
