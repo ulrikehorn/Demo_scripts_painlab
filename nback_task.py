@@ -292,8 +292,8 @@ def ratingRoutine():
     textObjsub.draw()
     winsub.flip()
     # Save screenshot
-    winsub.getMovieFrame()   # Defaults to front buffer, I.e. what's on screen now.
-    winsub.saveMovieFrames('screenshot_rating.png')  # save with a descriptive and unique filename.     
+    #winsub.getMovieFrame()   # Defaults to front buffer, I.e. what's on screen now.
+    #winsub.saveMovieFrames('screenshot_rating.png')  # save with a descriptive and unique filename.     
     timerRating.reset() # timer set to 0
     keys = None
     # for a certain time check which button has been pressed

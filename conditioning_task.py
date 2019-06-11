@@ -14,7 +14,7 @@ from EyeLinkCoreGraphicsPsychoPy import EyeLinkCoreGraphicsPsychoPy # for eyelin
 # used computer has a parallel port (for sending triggers to digitimer and brainamp)
 parallel_port_mode = False
 # testing mode or original speed (times written below)
-testing_mode = False
+testing_mode = True
 # connect with a real eye tracker or not?
 dummyMode = True # Simulated connection to the tracker; press ESCAPE to skip calibration/validataion
 
