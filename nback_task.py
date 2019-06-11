@@ -38,6 +38,9 @@ os.chdir(thisDir)
 if not os.path.isdir("data"):
     os.makedirs("data")
 
+# where are the pictures for the explanation
+pathExplanation = 'Pictures/'
+
 # Store info about the experiment session
 expName = 'N-Back experiment'
 expInfo = {'Subject':''}
@@ -81,9 +84,9 @@ vertices=((0, -50), (0, 50), (0,0), (-50,0), (50, 0)),
 #dotObj = visual.Circle(win=winsub, fillColor="white", lineColor="white",radius=[10,10],units="pix")
 ratingPain = visual.RatingScale(win = winsub, low = 0, high = 100, markerStart = 50, 
 marker = 'slider', stretch = 1.5, tickHeight = 1.5, tickMarks = [0,50,100],
-labels = [u'nicht spürbar', 'Schmerzgrenze', u'unerträglich'],
+labels = [u'not noticable', 'pain threshold', u'not bearable'],
 showAccept = False, lineColor='black', textColor='black', textSize=0.8)
-imagefile = thisDir + os.sep + '2back_explanation_transp.png'
+imagefile = thisDir + os.sep + pathExplanation + os.sep + '2back_explanation_transp.png'
 imagesub = visual.ImageStim(win = winsub, image = imagefile, pos = (0, 0.35))
 
 # to check the key status during rating
@@ -102,6 +105,9 @@ if parallel_port_mode:
 def itiRoutine():
     fixObj.draw()
     winsub.flip()
+    # Save screenshot
+    #winsub.getMovieFrame()   # Defaults to front buffer, I.e. what's on screen now.
+    #winsub.saveMovieFrames('screenshot_iti.png')  # save with a descriptive and unique filename.     
     core.wait(iti_time)
 
 # control task: show only letters
@@ -112,6 +118,9 @@ def controlRoutine():
     headlineTextsub.setText('control task')
     headlineTextsub.draw()
     winsub.flip()
+    # Save screenshot
+    #winsub.getMovieFrame()   # Defaults to front buffer, I.e. what's on screen now.
+    #winsub.saveMovieFrames('screenshot_control_start.png')  # save with a descriptive and unique filename.     
     core.wait(2.5)
     winsub.flip()
     core.wait(0.5)
@@ -135,6 +144,9 @@ def controlRoutine():
         textObjsub.setText(letter)
         textObjsub.draw()
         winsub.flip()
+        # Save screenshot
+        #winsub.getMovieFrame()   # Defaults to front buffer, I.e. what's on screen now.
+        #winsub.saveMovieFrames('screenshot_control_letter.png')  # save with a descriptive and unique filename.     
         core.wait(speed)
         winexp.flip()
         winsub.flip()
@@ -156,6 +168,9 @@ def taskRoutine():
     headlineTextsub.setText('2-back task')
     headlineTextsub.draw()
     winsub.flip()
+    # Save screenshot
+    #winsub.getMovieFrame()   # Defaults to front buffer, I.e. what's on screen now.
+    #winsub.saveMovieFrames('screenshot_task_start.png')  # save with a descriptive and unique filename.     
     core.wait(2.5)
     winsub.flip()
     core.wait(0.5)
@@ -189,6 +204,9 @@ def taskRoutine():
         event.clearEvents() # keypresses cleared
         timerResponse.reset() # timer set to 0
         winsub.flip()
+        # Save screenshot
+        #winsub.getMovieFrame()   # Defaults to front buffer, I.e. what's on screen now.
+        #winsub.saveMovieFrames('screenshot_task_letter.png')  # save with a descriptive and unique filename.     
         # wait several ms while the letter is shown
         while timerResponse.getTime()<=speed:
             response = event.getKeys(timeStamped=timerResponse)
@@ -262,7 +280,7 @@ def taskRoutine():
     return score, rating
 
 def ratingRoutine():
-    textObjsub.setText("Wie stark war dieser \n Schmerz?\n")
+    textObjsub.setText("How intense \nwas this stimulation?\n")
     textObjsub.draw()
     winsub.flip()
     ratingPain.reset()
@@ -273,6 +291,9 @@ def ratingRoutine():
     ratingPain.draw()
     textObjsub.draw()
     winsub.flip()
+    # Save screenshot
+    winsub.getMovieFrame()   # Defaults to front buffer, I.e. what's on screen now.
+    winsub.saveMovieFrames('screenshot_rating.png')  # save with a descriptive and unique filename.     
     timerRating.reset() # timer set to 0
     keys = None
     # for a certain time check which button has been pressed
