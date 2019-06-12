@@ -12,11 +12,11 @@ from EyeLinkCoreGraphicsPsychoPy import EyeLinkCoreGraphicsPsychoPy # for eyelin
  # the file EyeLinkCoreGraphicsPsychoPy.py has to be in the same folder!
 
 # used computer has a parallel port (for sending triggers to digitimer and brainamp)
-parallel_port_mode = False
+parallel_port_mode = True
 # testing mode or original speed (times written below)
-testing_mode = True
+testing_mode = False
 # connect with a real eye tracker or not?
-dummyMode = True # Simulated connection to the tracker; press ESCAPE to skip calibration/validataion
+dummyMode = False # Simulated connection to the tracker; press ESCAPE to skip calibration/validataion
 
 # how long the trigger signal to digitimer and brainamp should be
 trigger_dur = 0.01
@@ -267,7 +267,7 @@ for trial in trials:
 # send trigger to BrainAmp that experiment is finished
 if parallel_port_mode:
     timerTrigger.reset()
-    while timerTrigger.getTime() <= brainamp_trigger_dur:
+    while timerTrigger.getTime() <= trigger_dur:
         p_port1.setData(int("000000001",2)) # sets pin 2 high
     p_port1.setData(0) #set all pins low
 else:
