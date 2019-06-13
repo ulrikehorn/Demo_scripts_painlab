@@ -14,7 +14,7 @@ from EyeLinkCoreGraphicsPsychoPy import EyeLinkCoreGraphicsPsychoPy # for eyelin
 # used computer has a parallel port (for sending triggers to digitimer and brainamp)
 parallel_port_mode = False
 # testing mode or original speed (times written below)
-testing_mode = True
+testing_mode = T
 # connect with a real eye tracker or not?
 dummyMode = True # Simulated connection to the tracker; press ESCAPE to skip calibration/validataion
 
@@ -76,6 +76,9 @@ trials = data.TrialHandler(nReps=1.0, method='sequential',
     trialList=data.importConditions('conditioning_randomized.csv'),
     name='Trials')
 
+# add this structure to the experiment
+exp.addLoop(trials)
+
 # set screen properties
 scnWidth, scnHeight = (1920, 1080)
 
@@ -109,7 +112,7 @@ if parallel_port_mode:
 
 ## Set up the tracker
 tk.setOfflineMode() # we need to put the tracker in offline mode before we change its configurations
-tk.sendCommand('sample_rate 1000') #250, 500, 1000
+tk.sendCommand('sample_rate 500') #250, 500, 1000
 # inform the tracker the resolution of the subject display
 tk.sendCommand("screen_pixel_coords = 0 0 %d %d" % (scnWidth-1, scnHeight-1))
 # save display resolution in EDF data file for Data Viewer integration purposes
@@ -182,12 +185,8 @@ def cueRoutine(pain):
     # send trigger to BrainAmp and then wait
     if parallel_port_mode:
         timerTrigger.reset()
-        if (pain == 'pain'):
-            while timerTrigger.getTime() <= trigger_dur:
-                p_port1.setData(int("000000001",2)) # sets pin 2 high
-        else:
-            while timerTrigger.getTime() <= trigger_dur:
-                p_port1.setData(int("000000100",2)) # sets pin 4 high
+        while timerTrigger.getTime() <= trigger_dur:
+            p_port1.setData(int("000000001",2)) # sets pin 2 high
         p_port1.setData(0) #set all pins low
         core.wait(cue_time - trigger_dur)
     else:
@@ -252,9 +251,7 @@ textObjExp.setText("Started recording")
 textObjExp.draw()
 winexp.flip()
 
-
 # run the trials as given in the trial handler
-# now only for one block 
 for trial in trials:
     # abbreviate parameter names if possible (e.g. attention = trial.attention)
     if trial != None:
@@ -264,14 +261,8 @@ for trial in trials:
         cueRoutine(pain)
         exp.nextEntry()
 
-# send trigger to BrainAmp that experiment is finished
-if parallel_port_mode:
-    timerTrigger.reset()
-    while timerTrigger.getTime() <= brainamp_trigger_dur:
-        p_port1.setData(int("000000001",2)) # sets pin 2 high
-    p_port1.setData(0) #set all pins low
-else:
-    print('now I would send a trigger to the brainamp')
+itiRoutine(iti_time)
+
 # send a message to mark the end of trial
 # [see Data Viewer User Manual, Section 7: Protocol for EyeLink Data to Viewer Integration]
 tk.sendMessage('TRIAL_RESULT')

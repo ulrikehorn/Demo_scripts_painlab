@@ -8,7 +8,7 @@ from pyglet.window import key # for keystate handling
 import os  # handy system and path functions
 import sys  # to get file system encoding
 import parallel # for interaction with parallel port
-import matplotlib.pyplot as plt # for plotting the results
+#import matplotlib.pyplot as plt # for plotting the results
 
 #----------------settings--------------------
 # how long letters are displayed (in s)
@@ -18,8 +18,10 @@ iti_time = 5
 # how long the time for the rating scale is (8s)
 rating_time = 8
 
-# max 21
-num_blocks = 21
+# overall number of blocks, from which first half will be with pain
+# second half only with warm stimulation (therefore provide value divisible by 2)
+# max number possible: 40
+num_blocks = 10
 
 # for testing at a computer without parallel port change this:
 parallel_port_mode = True
@@ -340,7 +342,14 @@ def ratingRoutine():
 ##----------Experiment section--------------
 
 # read table with randomized task order
+# in there are task and stimulation values
+# (first half is hot, second half is warm)
+# nback and control task are randomly distributed
 taskdf = pd.read_csv('nback_run_order_randomized.csv', sep=',', header=0)
+warm_task_index = taskdf[taskdf['stim']=='warm'].index[0]
+task_bool_indices = np.concatenate((np.repeat(True,num_blocks/2),
+    np.repeat(False,warm_task_index-num_blocks/2),np.repeat(True,num_blocks/2),
+    np.repeat(False,warm_task_index-num_blocks/2)))
 
 # start experiment with space key 
 startText = "Press space to start\n"
@@ -352,7 +361,7 @@ itiRoutine()
 score = 0
 overall_score = 0
 ratings = np.empty(num_blocks)
-for iblock in range(num_blocks):
+for iblock in range(num_blocks/2):
     # set up handler to deal with trials
     # trials have the correct randomized order, so just read them sequentially
     blockdf = pd.read_csv('2back_randomized.csv', sep=',', header=0)
@@ -365,8 +374,7 @@ for iblock in range(num_blocks):
     # add this structure to the experiment
     exp.addLoop(trials)
     
-    # alternate between control condition and task condition
-    # TO DO: do that with another randomization file 
+    # switch between control condition and task condition
     if taskdf['task'][iblock] == 'control':
         rating = controlRoutine()
     else:
@@ -374,13 +382,48 @@ for iblock in range(num_blocks):
     ratings[iblock] = rating
     overall_score = overall_score + score
     itiRoutine()
+
+# after one half of the experiment switch stimulation to warm instead of painful
+headlineTextsub.setText('Short break')
+headlineTextsub.draw()
+startText = "Next stimuli will not be painful.\nPress space to start this next block\n"
+textObjsub.setText(startText)
+textObjsub.draw()
+winsub.flip()
+event.waitKeys(keyList=["space"])
+
+itiRoutine()
+for iblock in range(num_blocks/2,num_blocks):
+    # set up handler to deal with trials
+    # trials have the correct randomized order, so just read them sequentially
+    blockdf = pd.read_csv('2back_randomized.csv', sep=',', header=0)
+    indices = blockdf[blockdf['block'] == iblock].index.tolist()
+    # add these trials 
+    trials = data.TrialHandler(nReps=1.0, method='sequential',
+        trialList=data.importConditions('2back_randomized.csv',selection = indices),
+        name='Trials')
+    
+    # add this structure to the experiment
+    exp.addLoop(trials)
+    
+    # switch between control condition and task condition
+    if taskdf['task'][warm_task_index] == 'control':
+        rating = controlRoutine()
+    else:
+        score, rating = taskRoutine()
+    ratings[iblock] = rating
+    overall_score = overall_score + score
+    itiRoutine()
+    warm_task_index = warm_task_index+1
+
+
     #trials.addData('rating',rating)
     #print(trials.thisIndex)
     #print(trials.thisTrialN)
     #trials.data['score'][trials.thisIndex:trials.thisTrialN] = 5.0
     #print(trials.data['rating'])
 
-ratingdf = pd.DataFrame({'Task':taskdf['task'][range(num_blocks)], 'Rating':ratings, 'Stim':taskdf['stim'][range(num_blocks)]})
+ratingdf = pd.DataFrame({'Task':taskdf['task'][task_bool_indices], 'Rating':ratings, 'Stim':taskdf['stim'][task_bool_indices]})
 ratingdf.to_csv(filename+'_ratings.csv', index = False)
 #print(ratings)
 # plot of ratings depending on condition
