@@ -9,6 +9,7 @@ trigger_dur = 0.01
 
 # which port to use (default 0)
 p_port = parallel.Parallel(port = 1)
+#p_port.PPDATADIR(1) # out = 1
 
 # how many pain stimuli you want to send
 num_trigger = 20
@@ -38,6 +39,8 @@ trials = data.TrialHandler(nReps=num_trigger, method='random',
 
 thisTrial = trials.trialList[0]  # so we can initialise stimuli with some values
 
+p_port.setData(0) #set all pins low
+
 for thisTrial in trials:
     dotObj.setFillColor("white")
     dotObj.setLineColor("white")
@@ -54,6 +57,5 @@ for thisTrial in trials:
             p_port.setData(int("000010000",2)) # sets pin 6 high
         p_port.setData(0) #set all pins low
         core.wait(0.04)
-
 win.close()
 core.quit()
