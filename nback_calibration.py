@@ -10,19 +10,19 @@ from pyglet.window import key # for keystate handling
 import matplotlib.pyplot as plt # for plotting the results
 
 # testing mode or original speed (times written below)
-testing_mode = True
+testing_mode = False
 
 # how long should the ttl pulse be?
 trigger_dur = 0.01
 # How long is the stimulation programmed?
-stimulation_dur = 20.5
+stimulation_dur = 22.5
 # How much time the subjects need for rating
 time_for_rating = 7
 
 iti_time = 6
 
-#temps = np.array([42, 44, 40, 45, 46, 39, 41, 47, 43])
-temps = np.array([42, 44, 40, 45, 46])
+temps = np.array([42, 44, 40, 45, 46, 39, 41, 47, 43])
+#temps = np.array([42, 44, 40, 45, 46])
 ratings = np.empty(len(temps))
 ratings[:] = np.nan
 
@@ -50,6 +50,8 @@ winsub = visual.Window(
     allowGUI=False, allowStencil=False,
     monitor=expMonitor, color=[0.4,0.4,0.4], colorSpace='rgb', waitBlanking = False)
 
+mouse = event.Mouse(visible=True, newPos=None, win=winexp)
+
 infotextObjexp = visual.TextStim(win=winexp, text="", color="black", height = 0.06)
 textObjsub = visual.TextStim(win=winsub, text="", color="black", height = 0.06)
 # fixation cross:
@@ -70,6 +72,8 @@ timerGetKeys = core.Clock() # when to register another key press for continuous 
 
 # the port for communication with thermode
 p_port1 = parallel.Parallel(port = 1)
+# Set every pin to zero before so that the thermode does not start 
+p_port1.setData(0) #set all pins low
 
 # define all parts of the experiment as different functions
 def itiRoutine():
@@ -90,10 +94,11 @@ def stimulationRoutine():
         p_port1.setData(int("00000100",2)) # sets pin 4 high
         #p_port1.setData(int("00000001",2)) # sets pin 2 high
     p_port1.setData(0) #set all pins low
-    core.wait(stimulation_dur)
+    core.wait(stimulation_dur-trigger_dur)
 
 
 def ratingRoutine():
+    winsub.winHandle.activate()
     infotextObjexp.setText('Rating')
     infotextObjexp.draw()
     winexp.flip()
@@ -163,14 +168,14 @@ def endRoutine():
     # fit a regression first
     m,b = np.polyfit(x, y, 1) 
     # calculate the temperatures x corresponding to ratings 25 and 75
-    temp_25 = (25-b)/m
-    temp_75 = (75-b)/m
-    print(temp_25)
-    print(temp_75)
+    temp_30 = (30-b)/m
+    temp_70 = (70-b)/m
+    print(temp_30)
+    print(temp_70)
     
     plt.xlabel('temperature')
     plt.ylabel('ratings')
-    plt.plot(x, y, 'yo', x, m*x+b, '--b',temp_25,25,'bo',temp_75,75,'bo') 
+    plt.plot(x, y, 'yo', x, m*x+b, '--b',temp_30,30,'bo',temp_70,70,'bo') 
     plt.axis([38.5, 50.0, 0, 100])
     
     plt.savefig(filename+'.png',dpi=80,transparent=True)
@@ -191,17 +196,23 @@ def endRoutine():
 
 ##----------Experiment section--------------
 # Start experiment with space keys
-startText = "Leertaste um zu beginnen\n"
-infotextObjexp.setText(startText)
+infotextObjexp.setText("Click mouse to start the experiment")
 infotextObjexp.draw()
 winexp.flip()
-event.waitKeys(keyList=["space"])
+mouse.clickReset()
+event.clearEvents() #get rid of other, unprocessed events
+buttons, times = mouse.getPressed(getTime = True)
+while buttons == [0, 0, 0]:
+    buttons, times = mouse.getPressed(getTime = True)
+    if buttons == [1, 0, 0] or buttons == [0, 0, 1]:
+        break
 infotextObjexp.setText("")
 infotextObjexp.draw()
 winexp.flip()
 
 # run the trials as given in the trial handler
 for temp in range(len(temps)):
+    winsub.winHandle.activate()
     itiRoutine()
     stimulationRoutine()
     ratingRoutine()

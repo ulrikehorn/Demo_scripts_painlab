@@ -21,7 +21,7 @@ rating_time = 8
 # overall number of blocks, from which first half will be with pain
 # second half only with warm stimulation (therefore provide value divisible by 2)
 # max number possible: 40
-num_blocks = 2
+num_blocks = 16
 
 # for testing at a computer without parallel port change this:
 parallel_port_mode = True
@@ -31,7 +31,6 @@ parallel_port_mode = True
 thermode_trigger_dur = 0.01
 
 #--------------------------------------------
-
 # Ensure that relative paths start from the same directory as this script
 thisDir = os.path.dirname(os.path.abspath(__file__)).decode(sys.getfilesystemencoding())
 os.chdir(thisDir)
@@ -46,7 +45,7 @@ pathExplanation = 'Pictures/'
 # Store info about the experiment session
 expName = 'N-Back experiment'
 expInfo = {'Subject':''}
-dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
+dlg = gui.DlgFromDict(dictionary=expInfo, title=expName,screen=0)
 if dlg.OK == False:
     core.quit()  # user pressed cancel
 expInfo['expName'] = expName
@@ -104,6 +103,8 @@ timerTrigger = core.Clock() # for sending trigger to thermode
 #initialize parallel port for communication with thermode
 if parallel_port_mode:
     p_port1 = parallel.Parallel(port = 1)
+    # Set every pin to zero before so that the thermode does not start 
+    p_port1.setData(0) #set all pins low
 
 # Inter trial interval with fixation cross
 def itiRoutine():

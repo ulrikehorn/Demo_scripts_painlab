@@ -3,7 +3,7 @@ library(reshape)
 library(gridExtra)
 
 path <- '/home/raid3/uhorn/Documents/PsychoPy/PainExperiments/IMPRS Workshop/data'
-sub = '007'
+sub = '99'
 
 # load data from psychopy
 setwd(paste(path, sep = ''))
@@ -12,7 +12,7 @@ df_overview <- read.csv(paste(path,'/nback_result_',sub,'_ratings.csv', sep = ''
 
 # make a barplot for the hot condition to see the effect on rating
 p <- ggplot(df_overview[df_overview$Stim=='hot',], aes(x = Task, y = Rating, fill = Task)) +
-  geom_boxplot(outlier.shape = NA) +
+  geom_boxplot(outlier.shape = NA) + ylim(50,100) + 
   ggtitle(paste('subject',sub,'effect of attention on pain ratings', sep = ' '))
 p
 
@@ -43,34 +43,49 @@ for (iblock in 1:num_blocks){
     df_overview$rt[iblock] = mean(df$rt[df$block==iblock-1 & df$response==1])
   }
 }
-df_overview$percent_correct = df_overview$num_correct/df_overview$num_targets*100
 # rename factors
 df$stim=as.factor(df$stim)
 levels(df$stim) <- c("hot","warm")
 df$task=as.factor(df$task)
 levels(df$task) <- c("control","nback")
+df_overview$percent_correct = df_overview$num_correct/df_overview$num_targets*100
+
+Stim <- c('hot', 'warm')
+df_sums <- data.frame(Stim)
+df_sums$targets <- c(sum(df_overview$num_targets[df_overview$Stim=='hot' & df_overview$Task=='nback']),
+                     sum(df_overview$num_targets[df_overview$Stim=='warm'& df_overview$Task=='nback']))
+df_sums$hits <- c(sum(df_overview$num_correct[df_overview$Stim=='hot' & df_overview$Task=='nback']),
+                     sum(df_overview$num_correct[df_overview$Stim=='warm'& df_overview$Task=='nback']))
+df_sums$misses <- c(sum(df_overview$num_missed[df_overview$Stim=='hot' & df_overview$Task=='nback']),
+                  sum(df_overview$num_missed[df_overview$Stim=='warm'& df_overview$Task=='nback']))
+df_sums$false_alarms <- c(sum(df_overview$num_wrong[df_overview$Stim=='hot' & df_overview$Task=='nback']),
+                    sum(df_overview$num_wrong[df_overview$Stim=='warm'& df_overview$Task=='nback']))
 
 # make a barplot to see the effect on performance
-# 1. look at scores at the end of a trial
-p1 <- ggplot(df_overview, aes(x = Stim, y = score_diff, fill = Stim)) +
-  geom_boxplot(outlier.shape = NA) +
+# 1. target hits
+p1 <- ggplot(df_sums, aes(x = Stim, y = hits, fill = Stim)) +
+  geom_bar(stat="identity") +
   #geom_jitter(position=position_jitter(width=.1, height=0))+
-  geom_hline(yintercept=0, linetype="dashed", color = "black") +
-  ggtitle(paste('subject',sub,'score (difference from maximum score)', sep = ' '))
+  geom_hline(yintercept=12, linetype="dashed", color = "black") +
+  labs(x = 'heat stimulation condition', y = 'overall number of hits') +
+  ggtitle(paste('subject',sub,'sum of hits', sep = ' '))
 
-# 2. compare how many targets the subject had correct
-p2 <- ggplot(df_overview, aes(x = Stim, y = percent_correct, fill = Stim)) +
-  geom_boxplot(outlier.shape = NA) +
-  ggtitle(paste('subject',sub,'average target hits in percent', sep = ' '))
+# 2. misses
+p2 <- ggplot(df_sums, aes(x = Stim, y = misses, fill = Stim)) +
+  geom_bar(stat="identity") + ylim(0,max(df_sums$misses+1)) + 
+  labs(x = 'heat stimulation condition', y = 'overall number of misses') +
+  ggtitle(paste('subject',sub,'sum of misses', sep = ' '))
 
 # 3. compare how often the subject wrongly pressed
-p3 <- ggplot(df_overview, aes(x = Stim, y = num_wrong, fill = Stim)) +
-  geom_boxplot(outlier.shape = NA) +
-  ggtitle(paste('subject',sub,'average number of false alarms', sep = ' '))
+p3 <- ggplot(df_sums, aes(x = Stim, y = false_alarms, fill = Stim)) +
+  geom_bar(stat="identity") + ylim(0,max(df_sums$false_alarms+1)) + 
+  labs(x = 'heat stimulation condition', y = 'overall number of false alarms') +
+  ggtitle(paste('subject',sub,'sum of false alarms', sep = ' '))
 
 # 4. compare the reaction times
 p4 <- ggplot(df_overview, aes(x = Stim, y = rt, fill = Stim)) +
   geom_boxplot(outlier.shape = NA) +
+  labs(x = 'heat stimulation condition', y = 'reaction times (s)') +
   ggtitle(paste('subject',sub,'average reaction times for hits', sep = ' '))
 
 grid.arrange(p1, p2, p3, p4, nrow = 2, top = 'effect of pain on performance')
