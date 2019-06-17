@@ -21,7 +21,7 @@ rating_time = 8
 # overall number of blocks, from which first half will be with pain
 # second half only with warm stimulation (therefore provide value divisible by 2)
 # max number possible: 40
-num_blocks = 16
+num_blocks = 2
 
 # for testing at a computer without parallel port change this:
 parallel_port_mode = True
@@ -70,6 +70,8 @@ winsub = visual.Window(
     allowGUI=False, allowStencil=False,
     color=[0.5,0.5,0.5], colorSpace='rgb', waitBlanking = False)
 
+mouse = event.Mouse(visible=True, newPos=None, win=winexp)
+
 # text for experimenter screen:
 textObjexp = visual.TextStim(win=winexp, text="", color="black", height = 0.1, pos=(0.0, 0.0))
 textObjexp2 = visual.TextStim(win=winexp, text="", color="black", height = 0.1, pos = (0.0, 0.5))
@@ -115,11 +117,15 @@ def itiRoutine():
 # control task: show only letters
 # and rating
 def controlRoutine():
+    winsub.winHandle.activate()
     # Start block with space keys
     #imagesub.draw() --> maybe make a control image as well?
     headlineTextsub.setText('control task')
     headlineTextsub.draw()
+    textObjexp.setText('control task')
+    textObjexp.draw()
     winsub.flip()
+    winexp.flip()
     # Save screenshot
     #winsub.getMovieFrame()   # Defaults to front buffer, I.e. what's on screen now.
     #winsub.saveMovieFrames('screenshot_control_start.png')  # save with a descriptive and unique filename.     
@@ -163,11 +169,15 @@ def controlRoutine():
 # and also when the letter disappeared (score +12)
 # also show rating 
 def taskRoutine():
+    winsub.winHandle.activate()
     # Start block with space keys
     imagesub.draw()
     headlineTextsub.setText('2-back task')
     headlineTextsub.draw()
+    textObjexp.setText('2-back task')
+    textObjexp.draw()
     winsub.flip()
+    winexp.flip()
     # Save screenshot
     #winsub.getMovieFrame()   # Defaults to front buffer, I.e. what's on screen now.
     #winsub.saveMovieFrames('screenshot_task_start.png')  # save with a descriptive and unique filename.     
@@ -268,7 +278,7 @@ def taskRoutine():
                 textObjexp2.draw()
                 winexp.flip()
             else:
-                textObjexp2.setText('no target')
+                textObjexp2.setText('')
                 trials.addData('response',0)
                 textObjexp2.draw()
                 winexp.flip()
@@ -281,6 +291,9 @@ def ratingRoutine():
     textObjsub.setText("How intense \nwas this stimulation?\n")
     textObjsub.draw()
     winsub.flip()
+    textObjexp.setText("Rating")
+    textObjexp.draw()
+    winexp.flip()
     ratingPain.reset()
     timeRating = 'NaN'
     # start in the middle of the scale
@@ -348,11 +361,23 @@ task_bool_indices = np.concatenate((np.repeat(True,num_blocks/2),
     np.repeat(False,warm_task_index-num_blocks/2)))
 
 # start experiment with space key 
-startText = "Press space to start\n"
+startText = "Welcome to the experiment"
 textObjsub.setText(startText)
 textObjsub.draw()
+textObjexp.setText("Click mouse to start the experiment")
+textObjexp.draw()
 winsub.flip()
-event.waitKeys(keyList=["space"])
+winexp.flip()
+#event.waitKeys(keyList=["space"])
+mouse.clickReset()
+event.clearEvents() #get rid of other, unprocessed events
+buttons, times = mouse.getPressed(getTime = True)
+while buttons == [0, 0, 0]:
+    buttons, times = mouse.getPressed(getTime = True)
+    if buttons == [1, 0, 0] or buttons == [0, 0, 1]:
+        break
+winexp.flip()
+
 itiRoutine()
 score = 0
 overall_score = 0
@@ -382,11 +407,21 @@ for iblock in range(num_blocks/2):
 # after one half of the experiment switch stimulation to warm instead of painful
 headlineTextsub.setText('Short break')
 headlineTextsub.draw()
-startText = "Press space to start this next block\n"
-textObjsub.setText(startText)
-textObjsub.draw()
+textObjexp.setText('Short break - Click mouse to proceed')
+textObjexp.draw()
 winsub.flip()
-event.waitKeys(keyList=["space"])
+winexp.flip()
+#event.waitKeys(keyList=["space"])
+mouse.clickReset()
+event.clearEvents() #get rid of other, unprocessed events
+buttons, times = mouse.getPressed(getTime = True)
+while buttons == [0, 0, 0]:
+    buttons, times = mouse.getPressed(getTime = True)
+    if buttons == [1, 0, 0] or buttons == [0, 0, 1]:
+        break
+winsub.flip()
+winexp.flip()
+#event.waitKeys(keyList=["space"])
 
 itiRoutine()
 for iblock in range(num_blocks/2,num_blocks):
@@ -412,29 +447,8 @@ for iblock in range(num_blocks/2,num_blocks):
     itiRoutine()
     warm_task_index = warm_task_index+1
 
-
-    #trials.addData('rating',rating)
-    #print(trials.thisIndex)
-    #print(trials.thisTrialN)
-    #trials.data['score'][trials.thisIndex:trials.thisTrialN] = 5.0
-    #print(trials.data['rating'])
-
 ratingdf = pd.DataFrame({'Task':taskdf['task'][task_bool_indices], 'Rating':ratings, 'Stim':taskdf['stim'][task_bool_indices]})
 ratingdf.to_csv(filename+'_ratings.csv', index = False)
-#print(ratings)
-# plot of ratings depending on condition
-#data = np.transpose(np.array([ratings[::2],ratings[1::2]]))
-#labels = list(['Control','Task'])
-#fs = 10  # fontsize
-#fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(6, 6), sharey=True)
-#axes.boxplot(data, labels=labels, showfliers=False)
-#axes.set_title('Ratings', fontsize=fs)
-#plt.ylim(0, 100)     # set the ylim to left, right
-# add more plots by changing the nrows number and then accessing
-# axes via axes[0].boxplot(data, labels=labels, showmeans=True) and axes[1]
-#
-#fig.subplots_adjust(hspace=0.4)
-#plt.show()
 
 winsub.close()
 winexp.close()

@@ -73,4 +73,4 @@ p4 <- ggplot(df_overview, aes(x = Stim, y = rt, fill = Stim)) +
   geom_boxplot(outlier.shape = NA) +
   ggtitle(paste('subject',sub,'average reaction times for hits', sep = ' '))
 
-grid.arrange(p1, p2, p3, p4, nrow = 2)
+grid.arrange(p1, p2, p3, p4, nrow = 2, top = 'effect of pain on performance')
