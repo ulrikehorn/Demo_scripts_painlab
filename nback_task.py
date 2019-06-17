@@ -21,12 +21,12 @@ rating_time = 8
 # overall number of blocks, from which first half will be with pain
 # second half only with warm stimulation (therefore provide value divisible by 2)
 # max number possible: 40
-num_blocks = 10
+num_blocks = 16
 
 # for testing at a computer without parallel port change this:
 parallel_port_mode = True
 
-# pin to Thermode: 6
+# pin to Thermode: 4
 # how long the signal should be (in s)
 thermode_trigger_dur = 0.01
 
@@ -130,7 +130,6 @@ def controlRoutine():
     # begin heat/warm stimulation (send trigger to brainamp and thermode)
     if parallel_port_mode:
         while timerTrigger.getTime() <= thermode_trigger_dur:
-            #p_port1.setData(int("00010100",2)) # sets pin 4 and 6 high
             p_port1.setData(int("00000100",2)) # sets pin 4 high
         p_port1.setData(0) #set all pins low
     # run the trials as given in the trial handler
@@ -183,7 +182,6 @@ def taskRoutine():
     # begin heat/warm stimulation (send trigger to brainamp and thermode)
     if parallel_port_mode:
         while timerTrigger.getTime() <= thermode_trigger_dur:
-            #p_port1.setData(int("00010100",2)) # sets pin 4 and 6 high
             p_port1.setData(int("00000100",2)) # sets pin 4 high
         p_port1.setData(0) #set all pins low
     # run the trials as given in the trial handler
