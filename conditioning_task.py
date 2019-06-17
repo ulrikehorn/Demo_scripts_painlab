@@ -54,7 +54,7 @@ expInfo['date'] = data.getDateStr(format='%Y%m%d_%H%M')  # add a simple timestam
 expInfo['expName'] = expName
 
 # Data file name stem = absolute path + name; later add .psyexp, .csv, .log, etc
-filename = thisDir + os.sep + 'data' + os.sep + '%s_%s_%s' % (expInfo['Subject'], expInfo['expName'], expInfo['date'])
+filename = thisDir + os.sep + 'data' + os.sep + '%s' % (expInfo['Subject'])
 
 # in the DOS system you can only store up to 8 characters for the file name 
 edf_running_name = expInfo['Subject'] + '.EDF'
@@ -109,6 +109,7 @@ timerTrigger = core.Clock() # for duration of messages and triggers to digitimer
 if parallel_port_mode:
     # the port for communication with digitimer and brainamp
     p_port1 = parallel.Parallel(port = 1)
+    p_port1.setData(0) #set all pins low
 
 ## Set up the tracker
 tk.setOfflineMode() # we need to put the tracker in offline mode before we change its configurations
@@ -143,7 +144,7 @@ if hostVer>=4:
     tk.sendCommand("link_sample_data  = LEFT,RIGHT,GAZE,GAZERES,AREA,STATUS,HTARGET,INPUT")
 else:          
     tk.sendCommand("file_sample_data  = LEFT,RIGHT,GAZE,AREA,GAZERES,STATUS,INPUT")
-tk.sendCommand("link_sample_data  = LEFT,RIGHT,GAZE,GAZERES,AREA,STATUS,INPUT")
+    tk.sendCommand("link_sample_data  = LEFT,RIGHT,GAZE,GAZERES,AREA,STATUS,INPUT")
 
 ## define all parts of the experiment as different functions
 def itiRoutine(iti_time):
@@ -210,13 +211,13 @@ def cueRoutine(pain):
             core.wait(0.04)
             timerTrigger.reset()
             while timerTrigger.getTime() <= trigger_dur:
-                p_port.setData(int("000010000",2)) # sets pin 6 high
-            p_port.setData(0) #set all pins low
+                p_port1.setData(int("000010000",2)) # sets pin 6 high
+            p_port1.setData(0) #set all pins low
             core.wait(0.04)
             timerTrigger.reset()
             while timerTrigger.getTime() <= trigger_dur:
-                p_port.setData(int("000010000",2)) # sets pin 6 high
-            p_port.setData(0) #set all pins low
+                p_port1.setData(int("000010000",2)) # sets pin 6 high
+            p_port1.setData(0) #set all pins low
             core.wait(0.04)
         else:
             print('now I would send a trigger to the brainamp and digitimer')

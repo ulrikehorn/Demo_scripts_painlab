@@ -12,7 +12,7 @@ p_port = parallel.Parallel(port = 1)
 #p_port.PPDATADIR(1) # out = 1
 
 # how many pain stimuli you want to send
-num_trigger = 1
+num_trigger = 20
 
 # of how many trains should one pain stimulus consist
 num_trains = 3
