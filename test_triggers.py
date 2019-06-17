@@ -4,17 +4,20 @@
 from psychopy import core, data, visual
 import parallel
 
-# how long the trigger signal to the device should be
+# how long the trigger signal to the device should be (in s)
 trigger_dur = 0.01
 
 # which port to use (default 0)
 p_port = parallel.Parallel(port = 1)
 
-# how many triggers you want to send
+# how many pain stimuli you want to send
 num_trigger = 20
 
+# of how many trains should one pain stimulus consist
+num_trains = 3
+
 # how much time between triggers (in s)
-iti = 2.0
+iti = 5.0
 
 # Setup the Window
 win = visual.Window(
@@ -45,10 +48,12 @@ for thisTrial in trials:
     dotObj.setLineColor("red")
     dotObj.draw()
     win.flip()
-    timerTrigger.reset()
-    while timerTrigger.getTime() <= trigger_dur:
-        p_port.setData(int("000010000",2)) # sets pin 6 high
-    p_port.setData(0) #set all pins low
+    for itrain in range(num_trains):
+        timerTrigger.reset()
+        while timerTrigger.getTime() <= trigger_dur:
+            p_port.setData(int("000010000",2)) # sets pin 6 high
+        p_port.setData(0) #set all pins low
+        core.wait(0.04)
 
 win.close()
 core.quit()

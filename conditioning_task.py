@@ -25,7 +25,7 @@ trigger_dur = 0.01
 iti_test = 1.5
 #iti_orig = 10 ~8 (jittered)
 cue_time = 3.5
-stim_time = 0.5
+stim_time = 0.15
 
 # establish a link to the tracker
 if not dummyMode: 
@@ -207,7 +207,17 @@ def cueRoutine(pain):
             while timerTrigger.getTime() <= trigger_dur:
                 p_port1.setData(int("00010100",2)) # sets pin 4 and 6 high
             p_port1.setData(0) #set all pins low
-            core.wait(stim_time - trigger_dur)
+            core.wait(0.04)
+            timerTrigger.reset()
+            while timerTrigger.getTime() <= trigger_dur:
+                p_port.setData(int("000010000",2)) # sets pin 6 high
+            p_port.setData(0) #set all pins low
+            core.wait(0.04)
+            timerTrigger.reset()
+            while timerTrigger.getTime() <= trigger_dur:
+                p_port.setData(int("000010000",2)) # sets pin 6 high
+            p_port.setData(0) #set all pins low
+            core.wait(0.04)
         else:
             print('now I would send a trigger to the brainamp and digitimer')
             core.wait(stim_time)
