@@ -130,9 +130,8 @@ def controlRoutine():
     # begin heat/warm stimulation (send trigger to brainamp and thermode)
     if parallel_port_mode:
         while timerTrigger.getTime() <= thermode_trigger_dur:
-            #p_port1.setData(int("00000001",2)) # sets pin 2 high
             #p_port1.setData(int("00010100",2)) # sets pin 4 and 6 high
-            p_port1.setData(int("00010000",2)) # sets pin 6 high
+            p_port1.setData(int("00000100",2)) # sets pin 4 high
         p_port1.setData(0) #set all pins low
     # run the trials as given in the trial handler
     for trial in trials:
@@ -184,9 +183,8 @@ def taskRoutine():
     # begin heat/warm stimulation (send trigger to brainamp and thermode)
     if parallel_port_mode:
         while timerTrigger.getTime() <= thermode_trigger_dur:
-            #p_port1.setData(int("00000001",2)) # sets pin 2 high
             #p_port1.setData(int("00010100",2)) # sets pin 4 and 6 high
-            p_port1.setData(int("00010000",2)) # sets pin 6 high
+            p_port1.setData(int("00000100",2)) # sets pin 4 high
         p_port1.setData(0) #set all pins low
     # run the trials as given in the trial handler
     for trial in trials:
@@ -386,7 +384,7 @@ for iblock in range(num_blocks/2):
 # after one half of the experiment switch stimulation to warm instead of painful
 headlineTextsub.setText('Short break')
 headlineTextsub.draw()
-startText = "Next stimuli will not be painful.\nPress space to start this next block\n"
+startText = "Press space to start this next block\n"
 textObjsub.setText(startText)
 textObjsub.draw()
 winsub.flip()

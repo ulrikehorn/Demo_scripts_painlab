@@ -2,7 +2,7 @@ library(ggplot2)
 library(reshape)
 
 path <- '/home/raid3/uhorn/Documents/PsychoPy/PainExperiments/IMPRS Workshop/data'
-sub = '000'
+sub = '007'
 
 # load data from psychopy
 setwd(paste(path, sep = ''))

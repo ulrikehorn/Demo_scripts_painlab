@@ -11,7 +11,7 @@ import sys  # to get file system encoding
 speed = 0.75
 
 # how many blocks you want to do maximum
-num_blocks = 3
+num_blocks = 10
 
 # 1back or 2back task
 back_n = 2
@@ -23,6 +23,9 @@ os.chdir(thisDir)
 # Make data folder
 if not os.path.isdir("data"):
     os.makedirs("data")
+
+# where are the pictures for the explanation
+pathExplanation = 'Pictures/'
 
 filename = thisDir + os.sep + 'data' + os.sep + 'nback_training_result'
 
@@ -50,10 +53,10 @@ scoreTextsub = visual.TextStim(win=winsub, text="", color="black", height = 0.1,
 overallscoreTextsub = visual.TextStim(win=winsub, text="", color="black", height = 0.1, pos = (0.4, 0.75))
 headlineTextsub = visual.TextStim(win=winsub, color="black", height = 0.15, pos = (0.0, 0.85), bold = True)
 if back_n==2:
-    imagefile = thisDir + os.sep + '2back_explanation_transp.png'
+    imagefile = thisDir + os.sep + pathExplanation + os.sep + '2back_explanation_transp.png'
     headlineTextsub.setText('2-back task')
 elif back_n==1:
-    imagefile = thisDir + os.sep + '1back_explanation_transp.png'
+    imagefile = thisDir + os.sep + pathExplanation + os.sep + '1back_explanation_transp.png'
     headlineTextsub.setText('1-back task')
 else:
     print('Only 1 and 2 back tasks are supported')
@@ -146,16 +149,20 @@ def feedbackRoutine(overall_score):
     if missed==0 and incorrect ==0:
         result_text = "You made no mistakes!\nVery good!"
     elif missed==0 and incorrect>0:
-        result_text = "You detected all {} targets but incorrectly pressed {} times.\nConcentrate a bit more!".format(hits, incorrect)
+        result_text = "You detected all {} targets but incorrectly pressed {} times.".format(hits, incorrect)
+    elif missed>0 and hits>0 and incorrect==0:
+        result_text = "You missed {} targets!\nYou detected {} target(s).".format(missed,hits)
+    elif missed>0 and hits>0 and incorrect>0:
+        result_text = "You missed {} targets!\nYou detected {} target(s).\nYou incorrectly pressed the key {} times.".format(missed,hits,incorrect)
     else:
-        result_text = "You missed {} targets!\nTry a bit harder next time.".format(missed)
+        result_text = "You missed {} targets!\nYou incorrectly pressed the key {} times.".format(missed,incorrect)
     textObjsub.setText(result_text)
     textObjsub.draw()
     scoreTextsub.draw()
     overallscoreTextsub.setText('Overall score:  '+str(overall_score))
     overallscoreTextsub.draw()
     winsub.flip()
-    event.waitKeys(keyList=["space"])
+    event.waitKeys()
 
 
 ##----------Experiment section--------------
@@ -164,7 +171,7 @@ for iblock in range(num_blocks):
 
     # set up handler to deal with trials
     # trials have the correct randomized order, so just read them sequentially
-    trial_file = str(back_n)+'back_randomized.csv'
+    trial_file = str(back_n)+'back_randomized_training.csv'
     blockdf = pd.read_csv(trial_file, sep=',', header=0)
     indices = blockdf[blockdf['block'] == iblock].index.tolist()
     # selected to many blocks
