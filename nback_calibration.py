@@ -15,9 +15,9 @@ testing_mode = False
 # how long should the ttl pulse be?
 trigger_dur = 0.01
 # How long is the stimulation programmed?
-stimulation_dur = 22.5
+stimulation_dur = 1.5
 # How much time the subjects need for rating
-time_for_rating = 7
+time_for_rating = 1
 
 iti_time = 6
 
@@ -170,6 +170,7 @@ def endRoutine():
     # calculate the temperatures x corresponding to ratings 25 and 75
     temp_30 = (30-b)/m
     temp_70 = (70-b)/m
+    
     print(temp_30)
     print(temp_70)
     
@@ -178,7 +179,7 @@ def endRoutine():
     plt.plot(x, y, 'yo', x, m*x+b, '--b',temp_30,30,'bo',temp_70,70,'bo') 
     plt.axis([38.5, 50.0, 0, 100])
     
-    plt.savefig(filename+'.png',dpi=80,transparent=True)
+    plt.savefig(filename+'.png',dpi=80,transparent=False)
     
     # for resulting plot
     img = visual.ImageStim(
@@ -188,6 +189,9 @@ def endRoutine():
     pos = (0,0))
 
     img.draw()
+    infotextObjexp.pos = (0, -0.5)
+    infotextObjexp.setText('%.1f     %.1f' % (temp_30, temp_70))
+    infotextObjexp.draw()
     winexp.flip()
     textObjsub.setText("Well done! Calibration finished.")
     textObjsub.draw()
