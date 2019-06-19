@@ -3,7 +3,7 @@ library(reshape)
 library(gridExtra)
 
 path <- '/home/raid3/uhorn/Documents/PsychoPy/PainExperiments/IMPRS Workshop/data'
-sub = '99'
+sub = '1'
 
 # load data from psychopy
 setwd(paste(path, sep = ''))

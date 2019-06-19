@@ -15,9 +15,9 @@ testing_mode = False
 # how long should the ttl pulse be?
 trigger_dur = 0.01
 # How long is the stimulation programmed?
-stimulation_dur = 1.5
+stimulation_dur = 22.5
 # How much time the subjects need for rating
-time_for_rating = 1
+time_for_rating = 8
 
 iti_time = 6
 
